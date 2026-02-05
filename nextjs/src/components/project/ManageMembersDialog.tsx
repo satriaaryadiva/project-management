@@ -36,6 +36,7 @@ export default function ManageMembersDialog({ projectId, currentMembers, onUpdat
             const { error } = await client.addProjectMember(projectId, selectedUserId, 'member');
             if (error) {
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((error as any).code !== '23505') throw error;
             }
             setSelectedUserId('');
