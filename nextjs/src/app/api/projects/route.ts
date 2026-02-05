@@ -60,7 +60,7 @@ export async function POST(request: Request) {
         created_by: user.id
     };
 
-    // @ts-ignore - Supabase type inference for insert is erratic with some generated types
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await supabase.from('projects').insert(projectData as any).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });

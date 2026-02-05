@@ -1,82 +1,109 @@
-# Project Management System (BasicSass)
+# Supabase Next.js Starter Template
 
-A comprehensive Project Management application built with **Next.js 15 (App Router)** and **Supabase**.
+Aplikasi manajemen proyek dan tugas (Task Management) yang dibangun menggunakan **Next.js 15 (App Router)** dan **Supabase**. Aplikasi ini mencakup fitur otentikasi lengkap, manajemen profil, proyek, tugas, komentar, upload file, dan autentikasi dua faktor (2FA).
 
-## Features
+## 🚀 Cara Install & Run
 
--   **Role-Based Access Control (RBAC)**:
-    -   **Admin**: Full access (Manage Users, all Projects/Tasks).
-    -   **Manager**: Create Projects, Assign Members, Manage Tasks (Create, Delete, Complete).
-    -   **Member**: View Projects, Update Task Progress, Post Comments.
--   **Project Management**: Create projects, view summaries, track progress.
--   **Task Board**: Kanban-style or List view for tasks.
--   **Task Details**: Comments, Image Attachments, Subtasks.
--   **API**: JSON-based API endpoints for integration.
+Ikuti langkah-langkah berikut untuk menjalankan proyek ini di lokal komputer Anda.
 
-## Architecture
+### Prasyarat
+- Node.js versi 18 atau lebih baru.
+- Akun [Supabase](https://supabase.com).
 
--   **Frontend**: Next.js 15 (React Server Components + Client Components), TailwindCSS, Shadcn UI.
--   **Backend**: Supabase (PostgreSQL, Auth, Storage, Realtime).
--   **Security**: Row Level Security (RLS) policies enforce data access at the database level.
--   **State/Data**: Server Actions and Supabase Client for fetching data.
+### Langkah Instalasi
 
-## Database Structure
-
-### Tables
-1.  **profiles**: Extends auth.users with `full_name`, `role` (admin/manager/member).
-2.  **projects**: Stores project info (`name`, `description`).
-3.  **tasks**: detailed task info (`title`, `status`, `deadline`, `assigned_to`, `ordering`).
-4.  **task_comments**: Comments and attachments for tasks.
-5.  **project_members**: Many-to-Many relationship between Projects and Users.
-
-### Relationships
--   `projects` -> `created_by` (profiles)
--   `tasks` -> `project_id` (projects)
--   `tasks` -> `assigned_to` (profiles)
--   `task_comments` -> `task_id` (tasks)
--   `project_members` -> `project_id` & `user_id`
-
-## Installation & Run
-
-1.  **Clone the repository**:
+1.  **Clone Repository**
     ```bash
-    git clone <repository-url>
-    cd <project-folder>
+    git clone https://github.com/satriaaryadiva/project-management.git
     ```
 
-2.  **Install Dependencies**:
+2.  **Install Dependencies**
     ```bash
     npm install
     ```
 
-3.  **Environment Setup**:
-    Create `.env.local` and add your Supabase credentials:
+3.  **Setup Environment Variables**
+    Buat file `.env.local` di root folder `nextjs` dan isi dengan kredensial Supabase Anda:
     ```env
-    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+    NEXT_PUBLIC_SUPABASE_URL=your-project-url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+    NEXT_PUBLIC_PRODUCTNAME=MyAwesomeApp
     ```
-    *Also update `next.config.ts` if using Supabase Storage for images.*
 
-4.  **Run Development Server**:
+4.  **Jalankan Aplikasi**
     ```bash
     npm run dev
     ```
-    Open [http://localhost:3000](http://localhost:3000).
+    Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
-## API Endpoints
+## 🗄️ Struktur Database
 
-The application provides several JSON-based API endpoints:
+Aplikasi ini menggunakan skema database berikut di Supabase (PostgreSQL):
 
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/api/health` | GET | Check system health (Public). |
-| `/api/projects` | GET | List all projects. |
-| `/api/projects/[id]` | GET | Get details of a specific project. |
-| `/api/tasks` | GET | List tasks (optional `?project_id=1`). |
-| `/api/tasks` | POST | Create a new task (Validation included). |
-| `/api/users` | GET | List all registered users (profiles). |
+*   **`profiles`**: Menyimpan data pengguna tambahan yang terhubung dengan `auth.users`.
+    *   `id` (UUID, PK, FK ke `auth.users`)
+    *   `full_name` (Text)
+    *   `email` (Text)
+    *   `role` (Enum: 'admin', 'manager', 'member')
+    *   `avatar_url` (Text)
+    
+*   **`projects`**: Menyimpan data proyek.
+    *   `id` (BigInt, PK)
+    *   `name` (Text)
+    *   `description` (Text)
+    *   `created_by` (UUID, FK ke `profiles.id`)
 
-## Security & Validation
--   **Input Validation**: Forms use standard HTML5 validation and React state checks. API endpoints validate JSON body.
--   **Sanitization**: All database queries use parameterized inputs via `supabase-js` to prevent SQL Injection.
--   **XSS Protection**: React automatically escapes content rendered in JSX.
+*   **`project_members`**: Tabel relasi many-to-many antara proyek dan user.
+    *   `project_id` (BigInt, FK ke `projects.id`)
+    *   `user_id` (UUID, FK ke `profiles.id`)
+    *   `role` (Enum: 'manager', 'member')
+
+*   **`tasks`**: Menyimpan tugas-tugas dalam proyek.
+    *   `id` (BigInt, PK)
+    *   `project_id` (BigInt, FK ke `projects.id`)
+    *   `title` (Text)
+    *   `description` (Text)
+    *   `status` (Enum: 'todo', 'in-progress', 'done')
+    *   `assigned_to` (UUID, FK ke `profiles.id`)
+    *   `deadline` (Timestamp)
+    
+*   **`task_comments`**: Komentar pada tugas.
+    *   `id` (BigInt, PK)
+    *   `task_id` (BigInt, FK ke `tasks.id`)
+    *   `user_id` (UUID, FK ke `profiles.id`)
+    *   `content` (Text)
+    *   `image_url` (Text)
+
+*   **`todo_list`** (Legacy/Simple): Tabel todo sederhana (opsional).
+
+## 🏗️ Deskripsi Arsitektur & Cara Pakai
+
+### Arsitektur
+Aplikasi ini menggunakan arsitektur **Modern Fullstack Serverless**:
+*   **Frontend**: Next.js 15 dengan App Router, React Server Components (RSC), dan Client Components.
+*   **Styling**: Tailwind CSS dan Shadcn UI untuk komponen antarmuka yang modern dan responsif.
+*   **Backend**: Supabase (Backend-as-a-Service).
+    *   **Auth**: Menangani pendaftaran, login, dan 2FA.
+    *   **Database**: PostgreSQL dengan Row Level Security (RLS) untuk keamanan data.
+    *   **Storage**: Menyimpan file upload (avatar, lampiran tugas).
+    *   **Client**: `src/lib/supabase/client.ts` dan `unified.ts` menyediakan single entry point untuk interaksi API dan Supabase Client.
+
+### Cara Pakai
+
+1.  **Registrasi & Login**: Buat akun baru atau login. User baru defaultnya memiliki role `member`.
+2.  **Dashboard**: Halaman utama menampilkan ringkasan proyek dan progres.
+3.  **Proyek**:
+    *   Buka menu **Projects**.
+    *   Buat proyek baru.
+    *   Klik proyek untuk melihat detail.
+    *   **Manage Members**: Tambahkan anggota tim ke proyek melalui dialog "Manage Members".
+4.  **Tugas (Tasks)**:
+    *   Di dalam proyek, buat tugas baru.
+    *   Klik tugas untuk melihat detail, mengubah status, atau menambahkan assignee.
+    *   **Komentar**: Diskusikan tugas di kolom komentar, bisa menyertakan lampiran gambar.
+5.  **Storage**: Menu contoh untuk mengupload dan membagikan file pribadi.
+6.  **2FA**: Aktifkan Two-Factor Authentication di menu User Settings/Security untuk keamanan tambahan.
+7.  **Admin** (Khusus Role Admin): Menu "Manage Users" untuk mengubah role pengguna lain.
+
+---
+Dibuat dengan ❤️ menggunakan Next.js & Supabase.

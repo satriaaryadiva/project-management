@@ -23,18 +23,13 @@ export default function FileManagementPage() {
     const [showCopiedMessage, setShowCopiedMessage] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
 
-    useEffect(() => {
-        if (user?.id) {
-            loadFiles();
-        }
-    }, [user]);
-
-    const loadFiles = async () => {
+    const loadFiles = useCallback(async () => {
+        if (!user?.id) return;
         try {
             setLoading(true);
             setError('');
             const supabase = await createSPASassClient();
-            const { data, error } = await supabase.getFiles(user!.id);
+            const { data, error } = await supabase.getFiles(user.id);
 
             if (error) throw error;
             setFiles(data || []);
@@ -44,9 +39,16 @@ export default function FileManagementPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]);
 
-    const handleFileUpload = async (file: File) => {
+    useEffect(() => {
+        if (user?.id) {
+            loadFiles();
+        }
+    }, [user, loadFiles]);
+
+    const handleFileUpload = useCallback(async (file: File) => {
+        if (!user?.id) return;
         try {
             setUploading(true);
             setError('');
@@ -54,7 +56,7 @@ export default function FileManagementPage() {
             console.log(user)
 
             const supabase = await createSPASassClient();
-            const { error } = await supabase.uploadFile(user!.id!, file.name, file);
+            const { error } = await supabase.uploadFile(user.id, file.name, file);
 
             if (error) throw error;
 
@@ -66,7 +68,7 @@ export default function FileManagementPage() {
         } finally {
             setUploading(false);
         }
-    };
+    }, [user, loadFiles]);
 
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +88,7 @@ export default function FileManagementPage() {
         if (files.length > 0) {
             handleFileUpload(files[0]);
         }
-    }, []);
+    }, [handleFileUpload]);
 
 
     const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -181,31 +183,30 @@ export default function FileManagementPage() {
                 <CardContent className="space-y-6">
                     {error && (
                         <Alert variant="destructive" className="mb-4">
-                            <AlertCircle className="h-4 w-4"/>
+                            <AlertCircle className="h-4 w-4" />
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
 
                     {success && (
                         <Alert className="mb-4">
-                            <CheckCircle className="h-4 w-4"/>
+                            <CheckCircle className="h-4 w-4" />
                             <AlertDescription>{success}</AlertDescription>
                         </Alert>
                     )}
 
                     <div className="flex items-center justify-center w-full">
                         <label
-                            className={`w-full flex flex-col items-center px-4 py-6 bg-white rounded-lg shadow-lg tracking-wide border-2 cursor-pointer transition-colors ${
-                                isDragging
+                            className={`w-full flex flex-col items-center px-4 py-6 bg-white rounded-lg shadow-lg tracking-wide border-2 cursor-pointer transition-colors ${isDragging
                                     ? 'border-primary-500 border-dashed bg-primary-50'
                                     : 'border-primary-600 hover:bg-primary-50'
-                            }`}
+                                }`}
                             onDragEnter={handleDragEnter}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                         >
-                            <Upload className="w-8 h-8"/>
+                            <Upload className="w-8 h-8" />
                             <span className="mt-2 text-base">
                                 {uploading
                                     ? 'Uploading...'
@@ -225,7 +226,7 @@ export default function FileManagementPage() {
                     <div className="space-y-4">
                         {loading && (
                             <div className="flex items-center justify-center">
-                                <Loader2 className="w-6 h-6 animate-spin"/>
+                                <Loader2 className="w-6 h-6 animate-spin" />
                             </div>
                         )}
                         {files.length === 0 ? (
@@ -237,7 +238,7 @@ export default function FileManagementPage() {
                                     className="flex items-center justify-between p-4 bg-white rounded-lg border"
                                 >
                                     <div className="flex items-center space-x-3">
-                                        <FileIcon className="h-6 w-6 text-gray-400"/>
+                                        <FileIcon className="h-6 w-6 text-gray-400" />
                                         <span className="font-medium">{file.name.split('/').pop()}</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
@@ -246,14 +247,14 @@ export default function FileManagementPage() {
                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                                             title="Download"
                                         >
-                                            <Download className="h-5 w-5"/>
+                                            <Download className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={() => handleShare(file.name)}
                                             className="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors"
                                             title="Share"
                                         >
-                                            <Share2 className="h-5 w-5"/>
+                                            <Share2 className="h-5 w-5" />
                                         </button>
                                         <button
                                             onClick={() => {
@@ -263,7 +264,7 @@ export default function FileManagementPage() {
                                             className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
                                             title="Delete"
                                         >
-                                            <Trash2 className="h-5 w-5"/>
+                                            <Trash2 className="h-5 w-5" />
                                         </button>
                                     </div>
                                 </div>
@@ -294,7 +295,7 @@ export default function FileManagementPage() {
                                     onClick={() => copyToClipboard(shareUrl)}
                                     className="p-2 text-primary-600 hover:bg-primary-50 rounded-full transition-colors relative"
                                 >
-                                    <Copy className="h-5 w-5"/>
+                                    <Copy className="h-5 w-5" />
                                     {showCopiedMessage && (
                                         <span
                                             className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs px-2 py-1 rounded">

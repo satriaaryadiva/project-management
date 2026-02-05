@@ -45,15 +45,13 @@ export async function POST(request: Request) {
         }
     );
 
-    // Use upsert with ignoreDuplicates to handle "already member" gracefully
-    // @ts-ignore
+ 
     const { error } = await supabase.from('project_members').upsert(body, { onConflict: 'project_id,user_id', ignoreDuplicates: true });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });
 }
 
-// DELETE: Remove Member (We accept project_id and user_id in body, or via query params. Standard is DELETE usually on a resource ID, but this is a join table).
-// Let's use Query Params or Body. Body is easier for now.
+ 
 export async function DELETE(request: Request) {
     const body = await request.json();
     const cookieStore = await cookies();

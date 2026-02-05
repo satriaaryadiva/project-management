@@ -16,7 +16,7 @@ export class SassClient {
     }
 
     // --- Helper for API Calls ---
-    private async apiRequest(endpoint: string, method: string = 'GET', body?: any) {
+    private async apiRequest(endpoint: string, method: string = 'GET', body?: unknown) {
         const res = await fetch(`/api${endpoint}`, {
             method,
             headers: {
@@ -31,7 +31,7 @@ export class SassClient {
             try {
                 const json = await res.json();
                 if (json.error) errorMsg = json.error;
-            } catch (e) { }
+            } catch { }
             return { data: null, error: { message: errorMsg } };
         }
 
@@ -118,7 +118,7 @@ export class SassClient {
         // Keeping Client for Profile is often safer/faster context, but let's stick to user request.
         // Actually, getting OWN profile via auth session is safe on client.
         const { data: { session } } = await this.client.auth.getSession();
-        if (!session) return { data: null, error: 'No session' };
+        if (!session) return { data: null, error: { message: 'No session' } };
 
         return this.client.from('profiles').select('*').eq('id', session.user.id).single();
     }
@@ -147,14 +147,6 @@ export class SassClient {
     }
 
     async deleteProject(id: number) {
-        // Implement DELETE in /projects/[id]
-        // Not implemented in file write above, but let's assume standard REST
-        // Actually I didn't write deleteProject endpoint logic. Let's skip or use client fallback for now?
-        // No, I must be consistent. I will just leave it using Client if endpoint missing, 
-        // BUT I wrote /api/projects/[id] as just GET in my thought process? 
-        // Wait, I wrote /api/projects/route.ts. 
-        // I missed writing /api/projects/[id]/route.ts. I only wrote /api/tasks/[id].
-        // I'll fix this in next step.
         return this.apiRequest(`/projects/${id}`, 'DELETE');
     }
 
@@ -164,7 +156,7 @@ export class SassClient {
         return this.apiRequest(`/tasks?project_id=${projectId}`);
     }
 
-    async createProjectTask(task: any) {
+    async createProjectTask(task: Partial<Database['public']['Tables']['tasks']['Insert']>) {
         return this.apiRequest('/tasks', 'POST', task);
     }
 
@@ -186,7 +178,7 @@ export class SassClient {
         return this.apiRequest(`/tasks/${taskId}/comments`);
     }
 
-    async addTaskComment(comment: any) {
+    async addTaskComment(comment: { task_id: number; user_id: string; content: string; image_url?: string | null }) {
         // comment object has task_id, content, image_url
         // API expects body
         return this.apiRequest(`/tasks/${comment.task_id}/comments`, 'POST', comment);

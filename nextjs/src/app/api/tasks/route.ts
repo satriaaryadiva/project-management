@@ -58,8 +58,7 @@ export async function POST(request: Request) {
         }
     );
 
-    // 2. Insert with Sanitization (handled by Supabase/Postgres)
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await supabase.from('tasks').insert({
         title: body.title,
         description: body.description || '',

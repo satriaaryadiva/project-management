@@ -139,13 +139,7 @@ export default function TaskManagementPage() {
     const [filter, setFilter] = useState<boolean | null>(null);
     const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (user?.id) {
-            loadTasks();
-        }
-    }, [filter, user?.id]);
-
-    const loadTasks = async (): Promise<void> => {
+    const loadTasks = useCallback(async (): Promise<void> => {
         try {
             const isFirstLoad = initialLoading;
             if (!isFirstLoad) setLoading(true);
@@ -162,7 +156,13 @@ export default function TaskManagementPage() {
             setLoading(false);
             setInitialLoading(false);
         }
-    };
+    }, [filter, initialLoading]);
+
+    useEffect(() => {
+        if (user?.id) {
+            loadTasks();
+        }
+    }, [filter, user?.id, loadTasks]);
 
     const handleRemoveTask = async (id: number): Promise<void> => {
         try {
@@ -259,11 +259,9 @@ export default function TaskManagementPage() {
                             tasks.map((task) => (
                                 <div
                                     key={task.id}
-                                    className={`p-4 border rounded-lg transition-colors ${
-                                        task.done ? 'bg-muted' : 'bg-card'
-                                    } ${
-                                        task.urgent && !task.done ? 'border-red-200' : 'border-border'
-                                    }`}
+                                    className={`p-4 border rounded-lg transition-colors ${task.done ? 'bg-muted' : 'bg-card'
+                                        } ${task.urgent && !task.done ? 'border-red-200' : 'border-border'
+                                        }`}
                                 >
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex-1 min-w-0">

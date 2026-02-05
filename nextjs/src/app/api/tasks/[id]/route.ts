@@ -42,7 +42,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     );
 
     const taskUpdate = body;
-    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await supabase.from('tasks').update(taskUpdate as any).eq('id', parseInt(id));
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ success: true });

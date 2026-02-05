@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useCallback } from 'react';
 import { createSPASassClientAuthenticated } from '@/lib/supabase/client';
 import { Database } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -35,11 +35,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     const [userRole, setUserRole] = useState<string | null>(null);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-    useEffect(() => {
-        loadData();
-    }, [projectId]);
-
-    async function loadData() {
+    const loadData = useCallback(async () => {
         setLoading(true);
         try {
             const client = await createSPASassClientAuthenticated();
@@ -51,21 +47,20 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             // Fetch Project
             const { data: projData, error: projError } = await client.getProject(projectId);
             if (projError) throw projError;
-            // @ts-ignore
+        
             setProject(projData);
 
-            // Fetch Tasks
+         
             const { data: tasksData, error: tasksError } = await client.getProjectTasks(projectId);
             if (tasksError) throw tasksError;
-            // @ts-ignore
-            setTasks(tasksData || []);
+               setTasks(tasksData || []);
 
             // Fetch Project Members (Use the relationship to get profiles)
             const { data: membersData, error: membersError } = await client.getProjectMembers(projectId);
             if (membersError) throw membersError;
 
             // Map project_members to profiles
-            // @ts-ignore
+            // @ts-expect-error - Data type mismatch
             const mappedMembers = membersData?.map(m => m.profiles).filter(Boolean) as Profile[];
             setMembers(mappedMembers || []);
 
@@ -74,7 +69,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         } finally {
             setLoading(false);
         }
-    }
+    }, [projectId]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
 
     async function handleTaskUpdated() {
         await loadData();

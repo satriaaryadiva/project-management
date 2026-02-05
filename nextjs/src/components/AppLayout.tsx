@@ -9,7 +9,7 @@ import {
     X,
     ChevronDown,
     LogOut,
-    Key, Files, LucideListTodo,
+    Key, Files,
     Briefcase,
     Users
 } from 'lucide-react';

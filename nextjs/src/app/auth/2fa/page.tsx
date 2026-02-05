@@ -12,35 +12,35 @@ export default function TwoFactorAuthPage() {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        const checkMFAStatus = async () => {
+            try {
+                const supabase = await createSPASassClient();
+                const client = supabase.getSupabaseClient();
+
+                const { data: { user }, error: sessionError } = await client.auth.getUser();
+                if (sessionError || !user) {
+                    router.push('/auth/login');
+                    return;
+                }
+
+                const { data: aal, error: aalError } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+
+                if (aalError) throw aalError;
+
+                if (aal.currentLevel === 'aal2' || aal.nextLevel === 'aal1') {
+                    router.push('/app');
+                    return;
+                }
+
+                setLoading(false);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : 'An error occurred');
+                setLoading(false);
+            }
+        };
+
         checkMFAStatus();
-    }, []);
-
-    const checkMFAStatus = async () => {
-        try {
-            const supabase = await createSPASassClient();
-            const client = supabase.getSupabaseClient();
-
-            const { data: { user }, error: sessionError } = await client.auth.getUser();
-            if (sessionError || !user) {
-                router.push('/auth/login');
-                return;
-            }
-
-            const { data: aal, error: aalError } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
-
-            if (aalError) throw aalError;
-
-            if (aal.currentLevel === 'aal2' || aal.nextLevel === 'aal1') {
-                router.push('/app');
-                return;
-            }
-
-            setLoading(false);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An error occurred');
-            setLoading(false);
-        }
-    };
+    }, [router]);
 
     const handleVerified = () => {
         router.push('/app');
@@ -63,8 +63,8 @@ export default function TwoFactorAuthPage() {
     }
 
     return (
-            <div className="w-full max-w-md">
-                <MFAVerification onVerified={handleVerified} />
-            </div>
+        <div className="w-full max-w-md">
+            <MFAVerification onVerified={handleVerified} />
+        </div>
     );
 }

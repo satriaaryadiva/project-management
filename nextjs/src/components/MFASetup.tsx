@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { createSPASassClient } from '@/lib/supabase/client';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Key, CheckCircle, XCircle, Loader2 } from 'lucide-react';
-import {Factor} from "@supabase/auth-js";
+import { Factor } from "@supabase/auth-js";
 import { MFAEnrollTOTPParams } from '@supabase/auth-js';
 
 
@@ -231,10 +232,12 @@ export function MFASetup({ onStatusChange }: MFASetupProps) {
                     <div className="space-y-4">
                         <div className="flex justify-center">
                             {qr && (
-                                <img
+                                <Image
                                     src={qr}
                                     alt="QR Code"
-                                    className="w-48 h-48 border rounded-lg p-2"
+                                    width={192}
+                                    height={192}
+                                    className="border rounded-lg p-2"
                                 />
                             )}
                         </div>

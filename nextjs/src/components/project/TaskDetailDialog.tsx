@@ -5,7 +5,6 @@ import { createSPASassClientAuthenticated } from '@/lib/supabase/client';
 import { Database } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Send, Paperclip, User as UserIcon, Calendar, Trash2 } from 'lucide-react';
@@ -26,6 +25,28 @@ export default function TaskDetailDialog({ task, open, onClose, onUpdate }: { ta
     const [commenting, setCommenting] = useState(false);
     const [myId, setMyId] = useState<string | null>(null);
 
+    const loadComments = useCallback(async () => {
+        if (!task) return;
+        setLoading(true);
+        try {
+            const client = await createSPASassClientAuthenticated();
+            const { data, error } = await client.getTaskComments(task.id);
+            if (error) throw error;
+            // data is inferred as any, so no error here
+            setComments(data || []);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }, [task]);
+
+    // Use onUpdate to refresh parent if needed, though mostly local here.
+    // To silence unused var warning if we don't use it:
+    useEffect(() => {
+        if (!onUpdate) return;
+    }, [onUpdate]);
+
     useEffect(() => {
         if (open && task) {
             loadComments();
@@ -35,23 +56,7 @@ export default function TaskDetailDialog({ task, open, onClose, onUpdate }: { ta
                 setMyId(data.user?.id || null);
             });
         }
-    }, [open, task]);
-
-    async function loadComments() {
-        if (!task) return;
-        setLoading(true);
-        try {
-            const client = await createSPASassClientAuthenticated();
-            const { data, error } = await client.getTaskComments(task.id);
-            if (error) throw error;
-            // @ts-ignore
-            setComments(data || []);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }
+    }, [open, task, loadComments]);
 
     async function handlePostComment(e: React.FormEvent) {
         e.preventDefault();

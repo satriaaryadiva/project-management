@@ -43,10 +43,8 @@ export default function ProjectsPage() {
                 setUserRole(profile?.role || null);
             }
 
-            const { data, error } = await client.getProjects();
-            // Ignore error here if it's just RLS blocking empty list
-            // if (error) throw error; 
-            // @ts-ignore
+            const { data } = await client.getProjects();
+          
             setProjects(data || []);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -73,8 +71,9 @@ export default function ProjectsPage() {
 
             alert("Profile fixed and Role set to Admin! Reloading...");
             window.location.reload();
-        } catch (error: any) {
-            alert("Failed to fix profile: " + error.message);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : String(error);
+            alert("Failed to fix profile: " + msg);
         }
     }
 
@@ -89,8 +88,9 @@ export default function ProjectsPage() {
 
             alert("Role updated to Admin! Reloading...");
             window.location.reload();
-        } catch (error: any) {
-            alert("Failed to update role: " + error.message);
+        } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : String(error);
+            alert("Failed to update role: " + msg);
         }
     }
 
@@ -99,17 +99,18 @@ export default function ProjectsPage() {
         setSubmitting(true);
         try {
             const client = await createSPASassClientAuthenticated();
-            const { data, error } = await client.createProject(name, description);
+            const { error } = await client.createProject(name, description);
             if (error) throw error;
 
             setIsDialogOpen(false);
             setName('');
             setDescription('');
             loadProjects(); // Reload list
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error creating project:', error);
             // Show detailed error message
-            alert(`Failed to create project: ${error.message || JSON.stringify(error)}`);
+            const msg = error instanceof Error ? error.message : JSON.stringify(error);
+            alert(`Failed to create project: ${msg}`);
         } finally {
             setSubmitting(false);
         }

@@ -24,7 +24,7 @@ export default function ManageMembersDialog({ projectId, currentMembers, onUpdat
     async function loadProfiles() {
         const client = await createSPASassClientAuthenticated();
         const { data } = await client.getAllProfiles();
-        // @ts-ignore
+ 
         setAllProfiles(data || []);
     }
 
