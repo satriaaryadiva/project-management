@@ -106,10 +106,31 @@ export class SassClient {
     }
 
     // --- Todo List (Legacy - Removed or Not Used) ---
-    async getMyTodoList() { return { data: [], error: null } }
-    async createTask() { return { data: null, error: null } }
-    async removeTask() { return { data: null, error: null } }
-    async updateAsDone() { return { data: null, error: null } }
+    async getMyTodoList(page: number = 1, limit: number = 100, sortBy: string = 'created_at', filter: boolean | null = null) {
+        // Implement standard Supabase select
+        let query = this.client.from('todo_list').select('*', { count: 'exact' });
+
+        if (filter !== null) {
+            query = query.eq('done', filter);
+        }
+
+        query = query.order(sortBy, { ascending: false })
+            .range((page - 1) * limit, page * limit - 1);
+
+        return query;
+    }
+
+    async createTask(task: Database['public']['Tables']['todo_list']['Insert']) {
+        return this.client.from('todo_list').insert(task).single();
+    }
+
+    async removeTask(id: number) {
+        return this.client.from('todo_list').delete().eq('id', id);
+    }
+
+    async updateAsDone(id: number) {
+        return this.client.from('todo_list').update({ done: true, done_at: new Date().toISOString() }).eq('id', id);
+    }
 
     // --- Profiles & Users ---
 

@@ -24,7 +24,7 @@ export default function ManageMembersDialog({ projectId, currentMembers, onUpdat
     async function loadProfiles() {
         const client = await createSPASassClientAuthenticated();
         const { data } = await client.getAllProfiles();
- 
+
         setAllProfiles(data || []);
     }
 
@@ -35,8 +35,8 @@ export default function ManageMembersDialog({ projectId, currentMembers, onUpdat
             const client = await createSPASassClientAuthenticated();
             const { error } = await client.addProjectMember(projectId, selectedUserId, 'member');
             if (error) {
-                // Ignore unique violation (already member)
-                if (error.code !== '23505') throw error;
+
+                if ((error as any).code !== '23505') throw error;
             }
             setSelectedUserId('');
             onUpdate();

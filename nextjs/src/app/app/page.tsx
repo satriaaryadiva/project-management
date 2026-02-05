@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { createSPASassClientAuthenticated } from '@/lib/supabase/client';
-import { Database } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
@@ -17,7 +16,6 @@ type ProjectSummary = {
 export default function DashboardPage() {
     const [summaries, setSummaries] = useState<ProjectSummary[]>([]);
     const [loading, setLoading] = useState(true);
-    const [userRole, setUserRole] = useState<string | null>(null);
 
     useEffect(() => {
         loadDashboard();
@@ -27,10 +25,6 @@ export default function DashboardPage() {
         setLoading(true);
         try {
             const client = await createSPASassClientAuthenticated();
-
-            // Get User Role
-            const { data: profile } = await client.getMyProfile();
-            setUserRole(profile?.role || null);
 
             // Get Projects
             const { data: projects, error: projError } = await client.getProjects();
@@ -44,7 +38,8 @@ export default function DashboardPage() {
             for (const project of projects || []) {
                 const { data: tasks } = await client.getProjectTasks(project.id);
                 const total = tasks?.length || 0;
-                const completed = tasks?.filter(t => t.status === 'done').length || 0;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const completed = tasks?.filter((t: any) => t.status === 'done').length || 0;
 
                 summariesData.push({
                     id: project.id,

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { createSPASassClientAuthenticated } from '@/lib/supabase/client';
 import { Database } from '@/lib/types';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -78,7 +77,7 @@ export default function AdminUsersPage() {
                                             <td className="p-3 border-b">
                                                 <select
                                                     value={profile.role}
-                                                    onChange={(e) => handleRoleChange(profile.id, e.target.value as any)}
+                                                    onChange={(e) => handleRoleChange(profile.id, e.target.value as Profile['role'])}
                                                     className="p-1 border rounded bg-background"
                                                     disabled={updating === profile.id}
                                                 >

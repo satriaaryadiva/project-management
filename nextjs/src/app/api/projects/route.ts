@@ -61,7 +61,8 @@ export async function POST(request: Request) {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await supabase.from('projects').insert(projectData as any).select().single();
+    const insertData: any = projectData;
+    const { data, error } = await supabase.from('projects').insert(insertData as never).select().single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json(data, { status: 201 });
